@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SimpleBotCore.Bot;
+using SimpleBotCore.DBContext;
 using SimpleBotCore.Logic;
 using SimpleBotCore.Repositories;
 using System;
@@ -32,6 +33,17 @@ namespace SimpleBotCore
             services.AddSingleton<BotDialog, SimpleBot>();
 
             services.AddControllers();
+
+            services
+                 .AddOptions<ConnectionStrings>()
+                 .Configure<IConfiguration>(
+                     (settings, configuration) =>
+                     {
+                         configuration.GetSection(nameof(ConnectionStrings)).Bind(settings);
+                     });
+
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

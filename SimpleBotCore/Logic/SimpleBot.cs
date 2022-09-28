@@ -12,17 +12,12 @@ namespace SimpleBotCore.Logic
     public class SimpleBot : BotDialog
     {
         IUserProfileRepository _userProfile;
+        IPerguntasRepository _perguntasRepository;
 
-        public SimpleBot(IUserProfileRepository userProfile)
+        public SimpleBot(IUserProfileRepository userProfile, IPerguntasRepository perguntasRepository)
         {
             _userProfile = userProfile;
-        }
-
-        protected IMongoCollection<BsonDocument> ConnectionDB()
-        {
-            var cliente = new MongoClient("mongodb://localhost:27017");
-            var db = cliente.GetDatabase("DBBot");
-            return db.GetCollection<BsonDocument>("col01");
+            _perguntasRepository = perguntasRepository;
         }
 
         protected async override Task BotConversation()
@@ -84,16 +79,9 @@ namespace SimpleBotCore.Logic
 
                     // FAZER: GRAVAR AS PERGUNTAS EM UM BANCO DE DADOS
 
-                    var data = ConnectionDB();
+                    _perguntasRepository.Perguntar(texto);
 
-                    var ask = new BsonDocument
-                    {
-                        { "Pergunta", texto }
-                    };
-
-                    data.InsertOne(ask);
-
-                    await Task.Delay(4000);
+                    await Task.Delay(3000);
 
                     //await WriteAsync("Resposta não encontrada");
                     await WriteAsync("Pergunta registrada! Aguarde resposta.");

@@ -2,5 +2,5 @@
 
 public interface IPerguntasRepository
 {
-    string Perguntar(string pergunta);
+    void Perguntar(string pergunta);
 }
