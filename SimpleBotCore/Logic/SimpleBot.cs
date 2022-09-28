@@ -1,4 +1,6 @@
-﻿using SimpleBotCore.Bot;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
+using SimpleBotCore.Bot;
 using SimpleBotCore.Repositories;
 using System;
 using System.Collections.Generic;
@@ -16,6 +18,13 @@ namespace SimpleBotCore.Logic
             _userProfile = userProfile;
         }
 
+        protected IMongoCollection<BsonDocument> ConnectionDB()
+        {
+            var cliente = new MongoClient("mongodb://localhost:27017");
+            var db = cliente.GetDatabase("DBBot");
+            return db.GetCollection<BsonDocument>("col01");
+        }
+
         protected async override Task BotConversation()
         {
             SimpleUser user = _userProfile.TryLoadUser(UserId);
@@ -28,7 +37,7 @@ namespace SimpleBotCore.Logic
 
             await WriteAsync("Boa noite!");
 
-            if( user.Nome != null && user.Idade != 0 && user.Cor != null )
+            if (user.Nome != null && user.Idade != 0 && user.Cor != null)
             {
                 await WriteAsync(
                     $"{user.Nome}, de {user.Idade} anos, " +
@@ -36,7 +45,7 @@ namespace SimpleBotCore.Logic
             }
 
 
-            if( user.Nome == null )
+            if (user.Nome == null)
             {
                 await WriteAsync("Qual o seu nome?");
 
@@ -65,18 +74,29 @@ namespace SimpleBotCore.Logic
 
             await WriteAsync($"{user.Nome}, bem vindo ao Oraculo. Você tem direito a 3 perguntas");
 
-            for(int i=0; i<3; i++)
+            for (int i = 0; i < 3; i++)
             {
                 string texto = await ReadAsync();
 
-                if( texto.EndsWith("?") )
+                if (texto.EndsWith("?"))
                 {
                     await WriteAsync("Processando...");
 
                     // FAZER: GRAVAR AS PERGUNTAS EM UM BANCO DE DADOS
-                    await Task.Delay(5000);
 
-                    await WriteAsync("Resposta não encontrada");
+                    var data = ConnectionDB();
+
+                    var ask = new BsonDocument
+                    {
+                        { "Pergunta", texto }
+                    };
+
+                    data.InsertOne(ask);
+
+                    await Task.Delay(4000);
+
+                    //await WriteAsync("Resposta não encontrada");
+                    await WriteAsync("Pergunta registrada! Aguarde resposta.");
                 }
                 else
                 {
